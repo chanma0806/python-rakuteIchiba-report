@@ -9,6 +9,10 @@ import markdown
 import codecs
 import datetime
 import re
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import chromedriver_binary
+import time
 
 # 楽天市場API 
 RAKUTEN_APPLICATION_ID = "1096515298420576244"
@@ -88,7 +92,7 @@ def save_html(date, keywords, img_price_hist, sales_info, sales_old_info):
     html = markdown.markdown(text)
     html = html.replace("DATE", date).replace("KEYWORDS", keywords).replace("PRICE_HIST", img_price_hist).replace("HIGH_PRICE_TOP5", sales_info).replace("LOW_PRICE_TOP5", sales_old_info)
     html = convert_imgTag(html)
-    html_file = codecs.open("test.html", "w", encoding="utf-8", errors="xmlcharrefreplace")
+    html_file = codecs.open("report.html", "w", encoding="utf-8", errors="xmlcharrefreplace")
     html_file.write(html)
     html_file.close()
 
@@ -108,6 +112,16 @@ def convert_imgTag(html):
     
     return str(soup)
 
+# 商品ページをスクレイピングして楽天ポイントを取得
+def scraping_RakutenPoint(url):
+    options = Options()
+    options.headless = True
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
+    soup = BeautifulSoup(driver.page_source.encode("utf-8"), "html.parser")
+    text = soup.find("div", class_ = "point-summary__total___3rYYD").find("span").text.replace(",","") # コンマ排除
+    return int(text)
+
 # 楽天市場レポートを作成する
 def make_rakuten_report(keyword):
     # ヒストグラム画像
@@ -118,7 +132,7 @@ def make_rakuten_report(keyword):
     #　楽天市場から情報を取得 
     products = get_products_from_rakutenIchiba(keyword)
     table = convert_table(products)
-    
+
     # ヒストグラムを保存する
     table.hist(bins=100)
     plt.savefig(SRC_PRICE_HIST)
@@ -127,8 +141,13 @@ def make_rakuten_report(keyword):
     pd.set_option("display.max_colwidth", 1000) # カラムの幅が省略されないようにする
     table_high = table.sort_values(by=["price"], ascending=False).head(RANK)
     table_low = table.sort_values(by=["price"]).head(RANK)
+    # imgタグにコンバート
     table_high["image"] = table_high["image"].apply(mark_imgSrc)
     table_low["image"] = table_low["image"].apply(mark_imgSrc)
+    # 楽天ポイントを算出
+    table_high["point"] = table_high["link"].apply(scraping_RakutenPoint)
+    table_low["point"] = table_low["link"].apply(scraping_RakutenPoint)
+
     table_high = table_high.to_html(index=None).replace("\n", "")
     table_low = table_low.to_html(index=None).replace("\n", "")
     date = datetime.date.today().strftime("%Y-%m-%d")
