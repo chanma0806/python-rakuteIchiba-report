@@ -94,16 +94,16 @@ def save_html(date, keywords, img_price_hist, sales_info, sales_old_info):
 
 # イメージソースである印をつける
 def mark_imgSrc(path):
-    return IMG_SOURCE+path
+    return IMG_SOURCE + path
 
 # <table>内のイメージソースを<img>タグにコンバートする
 def convert_imgTag(html):
     soup = BeautifulSoup(html, "html")
     for td in soup.find_all("td", text=re.compile(IMG_SOURCE)):
-        from IPython.core.debugger import Pdb; Pdb().set_trace()
         src = td.text.replace(IMG_SOURCE, "")
         imgTag = soup.new_tag("img", src=src)
-        new_td = soup.new_tag("td").insert(0, imgTag)
+        new_td = soup.new_tag("td")
+        new_td.insert(0, imgTag)
         td.replace_with(new_td) 
     
     return str(soup)
