@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -6,10 +8,14 @@ from bs4 import BeautifulSoup
 import markdown
 import codecs
 import datetime
+import re
 
 # 楽天市場API 
 RAKUTEN_APPLICATION_ID = "1096515298420576244"
 RAKUTEN_ICHIBA_API = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?"
+
+# イメージソースであることを示す文字列
+IMG_SOURCE = "img_src: "
 
 # 商品情報インスタンス
 class Product:
@@ -81,13 +87,26 @@ def save_html(date, keywords, img_price_hist, sales_info, sales_old_info):
     text = source.read()
     html = markdown.markdown(text)
     html = html.replace("DATE", date).replace("KEYWORDS", keywords).replace("PRICE_HIST", img_price_hist).replace("HIGH_PRICE_TOP5", sales_info).replace("LOW_PRICE_TOP5", sales_old_info)
+    html = convert_imgTag(html)
     html_file = codecs.open("test.html", "w", encoding="utf-8", errors="xmlcharrefreplace")
     html_file.write(html)
     html_file.close()
 
-# イメージタグを生成する
-def make_imgTag(path):
-    return '<img alt="img" src={0}>'.format(path)
+# イメージソースである印をつける
+def mark_imgSrc(path):
+    return IMG_SOURCE+path
+
+# <table>内のイメージソースを<img>タグにコンバートする
+def convert_imgTag(html):
+    soup = BeautifulSoup(html, "html")
+    for td in soup.find_all("td", text=re.compile(IMG_SOURCE)):
+        from IPython.core.debugger import Pdb; Pdb().set_trace()
+        src = td.text.replace(IMG_SOURCE, "")
+        imgTag = soup.new_tag("img", src=src)
+        new_td = soup.new_tag("td").insert(0, imgTag)
+        td.replace_with(new_td) 
+    
+    return str(soup)
 
 # 楽天市場レポートを作成する
 def make_rakuten_report(keyword):
@@ -100,13 +119,18 @@ def make_rakuten_report(keyword):
     products = get_products_from_rakutenIchiba(keyword)
     table = convert_table(products)
     
+    # ヒストグラムを保存する
+    table.hist(bins=100)
+    plt.savefig(SRC_PRICE_HIST)
+
     # htmlを作成
+    pd.set_option("display.max_colwidth", 1000) # カラムの幅が省略されないようにする
     table_high = table.sort_values(by=["price"], ascending=False).head(RANK)
     table_low = table.sort_values(by=["price"]).head(RANK)
-    table_high.loc[table_high["image"] != None, "image"] = make_imgTag(table_high["image"])
-    table_low.loc[table_low["image"] != None, "image"] = make_imgTag(table_low["image"])
-    table_high = table_high.to_html().replace("\n", "")
-    table_low = table_low.to_html().replace("¥n", "")
+    table_high["image"] = table_high["image"].apply(mark_imgSrc)
+    table_low["image"] = table_low["image"].apply(mark_imgSrc)
+    table_high = table_high.to_html(index=None).replace("\n", "")
+    table_low = table_low.to_html(index=None).replace("\n", "")
     date = datetime.date.today().strftime("%Y-%m-%d")
     save_html(date, keyword, SRC_PRICE_HIST, table_high, table_low)
 
@@ -114,6 +138,7 @@ def main():
     print("検索キーワードを入力してください")
     keyword = input()
     make_rakuten_report(keyword)
+    print("完了しました")
 
 if __name__ == "__main__":
     main()
