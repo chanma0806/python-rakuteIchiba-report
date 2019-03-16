@@ -13,6 +13,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import chromedriver_binary
 import time
+from rakutenIchibaSearcher import RakutenIchibaSearcher
+from data import Product
 
 # 楽天市場API 
 RAKUTEN_APPLICATION_ID = "1096515298420576244"
@@ -21,65 +23,6 @@ RAKUTEN_ICHIBA_API = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/2
 # コンバート用の目印
 IMG_SOURCE = "img_src: "
 LINK_SOURCE = "link_src: "
-
-# 商品情報インスタンス
-class Product:
-    # 初期化
-    def __init__(self, title, price, link, image):
-        self.title = title
-        self.price = price
-        self.link = link
-        self.image = image
-        
-    def get_row(self):
-        return [self.title, self.price, self.link, self.image]
-    
-    @staticmethod
-    def get_columns():
-        return ["title", "price", "link", "image"]
-
-#　requests.getのラッパーメソッド
-def get(url, query, timeout):
-    while True:
-        try:
-            response = requests.get(url, params=query, timeout=timeout)
-            if response.status_code != 200:
-                raise Exception(response.status_code)
-        except Exception as e:
-            print("miss @{0}page status_code:{1}".format(query["page"], e.args[0]))
-            continue
-            
-        return response
-
-# xmlから商品情報にコンバートする
-def convert_product_from(item):
-    title = item.itemName.text if item.itemName != None else "---"
-    price = int(item.itemPrice.text) if item.itemPrice != None else None
-    url = item.itemUrl.text if item.itemUrl != None else "---"
-    image = item.mediumImageUrls.imageUrl.text if item.mediumImageUrls.imageUrl != None else None
-    return Product(title, price, url, image)
-    
-# レスポンスから商品情報を抽出する
-def extract_products_from(soup):
-    items = soup.find_all("Item")
-    return list(map(lambda item: convert_product_from(item), items))
-
-# 楽天市場から商品情報を取得する
-def get_products_from_rakutenIchiba(keyword):
-    
-    products = []
-    for page in range(1, 101):    
-        # 検索クエリ
-        query = {
-            "format": "xml",
-            "keyword" : keyword,
-            "applicationId" :  RAKUTEN_APPLICATION_ID,
-            "page" : page
-        }
-        response = get(RAKUTEN_ICHIBA_API, query=query, timeout=1)
-        soup = BeautifulSoup(response.content, "xml")
-        products.extend(extract_products_from(soup))
-    return products
 
 # 検索結果をテーブル化する
 def convert_table(products):
@@ -119,7 +62,6 @@ def convert_imgTag(html):
 # タイトルとリンクを1つのタグに束ねる
 def merge_link_to_title(html, links):
     soup = BeautifulSoup(html, "html.parser")
-    from IPython.core.debugger import Pdb; Pdb().set_trace()
     for td, link in zip(soup.find_all("td", text=re.compile(LINK_SOURCE)), links):
         title = td.text.replace(LINK_SOURCE, "")
         linkTag = soup.new_tag("a", href=link)
@@ -151,8 +93,9 @@ def make_rakuten_report(keyword):
     # ランキング
     RANK = 5
     
-    #　楽天市場から情報を取得 
-    products = get_products_from_rakutenIchiba(keyword)
+    #　楽天市場から情報を取得
+    rakuten = RakutenIchibaSearcher()
+    products = rakuten.get_products(keyword)
     table = convert_table(products)
 
     # ヒストグラムを保存する
