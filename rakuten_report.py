@@ -28,7 +28,7 @@ def convert_table(products):
 
 # htmlファイルを保存する
 def save_html(date, keywords, img_price_hist, highers, lowers, links):
-    source = codecs.open("test.md", mode="r", encoding="utf-8")
+    source = codecs.open("report_format.md", mode="r", encoding="utf-8")
     text = source.read()
     html = markdown.markdown(text)
     html = html.replace("DATE", date).replace("KEYWORDS", keywords).replace("PRICE_HIST", img_price_hist).replace("HIGH_PRICE_TOP5", highers).replace("LOW_PRICE_TOP5", lowers)
