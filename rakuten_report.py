@@ -11,7 +11,8 @@ import datetime
 import re
 import time
 from rakutenIchibaSearcher import RakutenIchibaSearcher
-from data import Product
+from data import Product, MarketData
+from marketAnalyzer import MarketAnalyzer
 
 # 楽天市場API 
 RAKUTEN_APPLICATION_ID = "1096515298420576244"
@@ -20,11 +21,6 @@ RAKUTEN_ICHIBA_API = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/2
 # コンバート用の目印
 IMG_SOURCE = "img_src: "
 LINK_SOURCE = "link_src: "
-
-# 検索結果をテーブル化する
-def convert_table(products):
-    rows = list(map(lambda product: product.get_row(), products))
-    return pd.DataFrame(data=rows, columns=Product.get_columns())
 
 # htmlファイルを保存する
 def save_html(date, keywords, img_price_hist, highers, lowers, links):
@@ -79,31 +75,28 @@ def make_rakuten_report(keyword):
     #　楽天市場から情報を取得
     rakuten = RakutenIchibaSearcher()
     products = rakuten.get_products(keyword)
-    table = convert_table(products)
-    
-    # ヒストグラムを保存する
-    table.hist(bins=100)
-    plt.savefig(SRC_PRICE_HIST)
+
+    # 商品情報を解析
+    market_analyzer = MarketAnalyzer()
+    market_info = market_analyzer.analyze(products)
 
     # htmlを作成
     pd.set_option("display.max_colwidth", 1000) # カラムの幅が省略されないようにする
-    table_high = table.sort_values(by=["price"], ascending=False).head(RANK)
-    table_low = table.sort_values(by=["price"]).head(RANK)
     # imgタグにコンバート
-    table_high["image"] = table_high["image"].apply(mark_imgSrc)
-    table_low["image"] = table_low["image"].apply(mark_imgSrc)
+    market_info.higher_table["image"] = market_info.higher_table["image"].apply(mark_imgSrc)
+    market_info.lower_table["image"] = market_info.lower_table["image"].apply(mark_imgSrc)
     # タイトル情報を付与する
-    table_high["title"] = table_high["title"].apply(mark_titleSrc)
-    table_low["title"] = table_low["title"].apply(mark_titleSrc)
+    market_info.higher_table["title"] = market_info.higher_table["title"].apply(mark_titleSrc)
+    market_info.lower_table["title"] = market_info.lower_table["title"].apply(mark_titleSrc)
     # 楽天ポイントを算出
-    table_high["point"] = table_high["link"].apply(rakuten.get_rakutenPoint)
-    table_low["point"] = table_low["link"].apply(rakuten.get_rakutenPoint)
+    market_info.higher_table["point"] = market_info.higher_table["link"].apply(rakuten.get_rakutenPoint)
+    market_info.lower_table["point"] = market_info.lower_table["link"].apply(rakuten.get_rakutenPoint)
     # リンク情報を取り出す
-    table_high_link = table_high.pop("link")
-    table_low_link = table_low.pop("link")
+    table_high_link = market_info.higher_table.pop("link")
+    table_low_link = market_info.lower_table.pop("link")
 
-    table_high = table_high.to_html(index=None).replace("\n", "")
-    table_low = table_low.to_html(index=None).replace("\n", "")
+    table_high = market_info.higher_table.to_html(index=None).replace("\n", "")
+    table_low = market_info.lower_table.to_html(index=None).replace("\n", "")
     date = datetime.date.today().strftime("%Y-%m-%d")
     links = table_high_link.tolist()
     links.extend(table_low_link.tolist())

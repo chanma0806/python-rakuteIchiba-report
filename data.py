@@ -13,3 +13,10 @@ class Product:
     @staticmethod
     def get_columns():
         return ["title", "price", "link", "image"]
+
+# 市場解析データ
+class MarketData:
+    def __init__(self, price_hist, higher_table, lower_table):
+        self.price_hist = price_hist
+        self.higher_table = higher_table
+        self.lower_table = lower_table

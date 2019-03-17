@@ -1,12 +1,14 @@
 import requests
-import urllib
+from urllib.parse import urlparse
 
 # webアクセス用クラス
-class WebAccessor:  
+class WebAccessor: 
+
+#-- static method --
     # urlにアクセスしレスポンスを返却(レスポンスが200になるまでリトライ)  
     @staticmethod
-    def get(url, query=[], timeout=0):
-        if WebAccessor.isAccessible(url):
+    def get(url, query={}, timeout=0):
+        if not WebAccessor.is_available_scheme(url):
             raise Exception("can't access url")
         while True:
             try:
@@ -18,12 +20,8 @@ class WebAccessor:
                 continue
         return response
 
-    # urlがアクセス可能か
+    #  schemeが正しいか
     @staticmethod
-    def isAccessible(url):
-        try:
-            urllib.request.urlopen(url)
-        except Exception as e:
-            print(e)
-            return False
-        return True
+    def is_available_scheme(url):
+        o = urlparse(url)
+        return o.scheme == "http" or o.scheme == "https"
