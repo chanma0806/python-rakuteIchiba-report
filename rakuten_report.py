@@ -9,9 +9,6 @@ import markdown
 import codecs
 import datetime
 import re
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import chromedriver_binary
 import time
 from rakutenIchibaSearcher import RakutenIchibaSearcher
 from data import Product
@@ -72,20 +69,6 @@ def merge_link_to_title(html, links):
 
     return str(soup)
 
-# 商品ページをスクレイピングして楽天ポイントを取得
-def scraping_RakutenPoint(url):
-    options = Options()
-    options.headless = True
-    driver = webdriver.Chrome(options=options)
-    driver.get(url)
-    soup = BeautifulSoup(driver.page_source.encode("utf-8"), "html.parser")
-    point_summary = soup.find("div", class_ = "point-summary__total___3rYYD")
-    if point_summary == None:
-        return 0
-    text = point_summary.find("span").text.replace(",","") # コンマ排除
-    
-    return int(text)
-
 # 楽天市場レポートを作成する
 def make_rakuten_report(keyword):
     # ヒストグラム画像
@@ -97,7 +80,7 @@ def make_rakuten_report(keyword):
     rakuten = RakutenIchibaSearcher()
     products = rakuten.get_products(keyword)
     table = convert_table(products)
-
+    
     # ヒストグラムを保存する
     table.hist(bins=100)
     plt.savefig(SRC_PRICE_HIST)
@@ -113,8 +96,8 @@ def make_rakuten_report(keyword):
     table_high["title"] = table_high["title"].apply(mark_titleSrc)
     table_low["title"] = table_low["title"].apply(mark_titleSrc)
     # 楽天ポイントを算出
-    table_high["point"] = table_high["link"].apply(scraping_RakutenPoint)
-    table_low["point"] = table_low["link"].apply(scraping_RakutenPoint)
+    table_high["point"] = table_high["link"].apply(rakuten.get_rakutenPoint)
+    table_low["point"] = table_low["link"].apply(rakuten.get_rakutenPoint)
     # リンク情報を取り出す
     table_high_link = table_high.pop("link")
     table_low_link = table_low.pop("link")
