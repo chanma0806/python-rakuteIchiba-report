@@ -1,7 +1,7 @@
-from webAccessor import WebAccessor
-from scraper import Scraper, ScraperCommand
+from .component.webAccessor import WebAccessor
+from .component.scraper import Scraper, ScraperCommand
 from bs4 import BeautifulSoup
-from data import Product
+from .appData.data import Product
 import pandas as pd
 
 RAKUTEN_APPLICATION_ID = "1096515298420576244"

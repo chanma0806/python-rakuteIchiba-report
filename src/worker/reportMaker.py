@@ -1,6 +1,6 @@
 # レポート作成クラス
 
-from data import MarketData
+from .appData.data import MarketData
 from bs4 import BeautifulSoup
 import re
 import datetime
@@ -20,8 +20,8 @@ class ReportMaker:
 #-- class method--
 
     # レポートを作成する
-    def make_markt_report(self, keyword):
-
+    def make_markt_report(self, keyword, result_path):
+        
         # レポート編集の下準備
         self.__mark_tag()
         table_high = self.market_info.higher_table.to_html(index=None).replace("\n", "")
@@ -33,17 +33,21 @@ class ReportMaker:
         links.extend(table_low_link.tolist())
         
         # レポート雛形を読み込み
-        source = codecs.open("report_format.md", mode="r", encoding="utf-8")
+        source = codecs.open("./appData/report_format.md", mode="r", encoding="utf-8")
         text = source.read()
         html = markdown.markdown(text)
 
+        # ヒストグラムを出力
+        PRICE_HIST = result_path + "price_hist.png"
+        self.market_info.price_hist.savefig(PRICE_HIST)
+
         # htmlを編集
-        html = html.replace("DATE", date).replace("KEYWORDS", keyword).replace("PRICE_HIST", self.market_info.price_hist).replace("HIGH_PRICE_TOP5", table_high).replace("LOW_PRICE_TOP5", table_low)
+        html = html.replace("DATE", date).replace("KEYWORDS", keyword).replace("PRICE_HIST", "price_hist.png").replace("HIGH_PRICE_TOP5", table_high).replace("LOW_PRICE_TOP5", table_low)
         html = self.__convert_imgTag(html)
         html = self.__merge_link_to_title(html, links)
 
         # レポートを保存
-        html_file = codecs.open("report.html", "w", encoding="utf-8", errors="xmlcharrefreplace")
+        html_file = codecs.open(result_path+"report.html", "w", encoding="utf-8", errors="xmlcharrefreplace")
         html_file.write(html)
         html_file.close()
 

@@ -1,19 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-import numpy as np
-from matplotlib import pyplot as plt
-import requests
-from bs4 import BeautifulSoup
-import markdown
-import codecs
-import datetime
-import re
-import time
-from rakutenIchibaSearcher import RakutenIchibaSearcher
-from data import Product, MarketData
-from marketAnalyzer import MarketAnalyzer
-from reportMaker import ReportMaker
+import os
+from worker import RakutenIchibaSearcher, MarketAnalyzer, ReportMaker
+from worker.appData.data import Product, MarketData
 
 # 楽天市場で市場解析する
 def anlayze_market_from_rakuten(keyword):
@@ -33,7 +23,8 @@ def anlayze_market_from_rakuten(keyword):
     # 報告レポートを作成
     pd.set_option("display.max_colwidth", 1000) # カラムの幅が省略されないようにする
     report_maker = ReportMaker(market_info)
-    report_maker.make_markt_report(keyword)
+    result_path = os.path.abspath("./") + "/result/"
+    report_maker.make_markt_report(keyword,result_path)
 
 def main():
     print("検索キーワードを入力してください")

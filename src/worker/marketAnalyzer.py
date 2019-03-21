@@ -1,5 +1,4 @@
-from data import Product
-from data import MarketData
+from .appData.data import Product, MarketData
 from matplotlib import pyplot as plt
 import pandas as pd
 
@@ -17,12 +16,11 @@ class MarketAnalyzer:
         if products == None or len(products) < 1:
             return None
         table = self.__convert_table(products)
-        table["price"].hist(bins=100)
-        plt.savefig(SRC_PRICE_HIST)
+        price_hist = table["price"].hist(bins=100)
         higher = table.sort_values(by=["price"], ascending=False).head(RANK)
         lower = table.sort_values(by=["price"]).head(RANK)
         
-        return MarketData(SRC_PRICE_HIST, higher, lower)
+        return MarketData(price_hist, higher, lower)
 
 #-- private method --    
     # 商品情報をテーブル化する
