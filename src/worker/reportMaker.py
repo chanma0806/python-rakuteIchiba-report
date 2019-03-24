@@ -7,6 +7,7 @@ import datetime
 import codecs
 import markdown
 import os
+import webbrowser
 
 # コンバート用の目印
 IMG_SOURCE = "img_src: "
@@ -52,6 +53,9 @@ class ReportMaker:
         html_file = codecs.open(result_path+"report.html", "w", encoding="utf-8", errors="xmlcharrefreplace")
         html_file.write(html)
         html_file.close()
+
+        # レポートをブラウザで開く
+        webbrowser.open("file://"+result_path+"report.html")
 
 
 #-- private method--
