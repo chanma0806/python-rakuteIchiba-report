@@ -6,6 +6,7 @@ import re
 import datetime
 import codecs
 import markdown
+import os
 
 # コンバート用の目印
 IMG_SOURCE = "img_src: "
@@ -24,22 +25,23 @@ class ReportMaker:
         
         # レポート編集の下準備
         self.__mark_tag()
-        table_high = self.market_info.higher_table.to_html(index=None).replace("\n", "")
-        table_low = self.market_info.lower_table.to_html(index=None).replace("\n", "")
         date = datetime.date.today().strftime("%Y-%m-%d")
         table_high_link = self.market_info.higher_table.pop("link")
         table_low_link = self.market_info.lower_table.pop("link")
+        table_high = self.market_info.higher_table.to_html(index=None).replace("\n", "")
+        table_low = self.market_info.lower_table.to_html(index=None).replace("\n", "")
         links = table_high_link.tolist()
         links.extend(table_low_link.tolist())
         
         # レポート雛形を読み込み
-        source = codecs.open("./appData/report_format.md", mode="r", encoding="utf-8")
+        format_path = os.path.abspath("worker/appData/report_format.md")
+        source = codecs.open(format_path, mode="r", encoding="utf-8")
         text = source.read()
         html = markdown.markdown(text)
 
         # ヒストグラムを出力
         PRICE_HIST = result_path + "price_hist.png"
-        self.market_info.price_hist.savefig(PRICE_HIST)
+        self.market_info.price_hist.figure.savefig(PRICE_HIST)
 
         # htmlを編集
         html = html.replace("DATE", date).replace("KEYWORDS", keyword).replace("PRICE_HIST", "price_hist.png").replace("HIGH_PRICE_TOP5", table_high).replace("LOW_PRICE_TOP5", table_low)
