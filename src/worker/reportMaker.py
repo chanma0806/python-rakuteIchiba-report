@@ -22,7 +22,7 @@ class ReportMaker:
 #-- class method--
 
     # レポートを作成する
-    def make_markt_report(self, keyword, result_path):
+    def make_market_report(self, keyword, result_path):
         
         # レポート編集の下準備
         self.__mark_tag()

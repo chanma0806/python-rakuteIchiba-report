@@ -24,7 +24,7 @@ def anlayze_market_from_rakuten(keyword):
     pd.set_option("display.max_colwidth", 1000) # カラムの幅が省略されないようにする
     report_maker = ReportMaker(market_info)
     result_path = os.path.abspath("./") + "/result/"
-    report_maker.make_markt_report(keyword,result_path)
+    report_maker.make_market_report(keyword,result_path)
 
 def main():
     print("検索キーワードを入力してください")
