@@ -25,13 +25,25 @@
 - `src/worker/rakutenIchibaSeacher.py`内の`RAKUTEN_APPLICATION_ID`に取得したアプリIDを代入します。
 
 ## 実行
+- 下記コマンドを実行してください<br>
+`$ python setup.py install`<br>
 `$ cd src`<br>
 `$ python rakuten_report.py`<br>
 
-任意の検索キーワードを入力してください。<br>
+- 任意の検索キーワードを入力してください。<br>
 処理が完了するとブラウザが起動し、レポートが表示されます。
 
 # Dependency
+
+- python: 3.7.1
+- pandas: 0.23.4
+- matplotlib: 3.0.2
+- Markdowdn: 3.0.1
+- beautifulsoup4: 4.6.3
+- selenium: 3.141.0  
+- requests: 2.21.0
+- chromedriver-binary==73.0
+- setuptools: 40.6.3
 
 # Architecture
 ![クラス図](doc/class_diagram.png)
