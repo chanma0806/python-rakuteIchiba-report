@@ -2,10 +2,12 @@ import requests
 from urllib.parse import urlparse
 
 # webアクセス用クラス
-class WebAccessor: 
 
-#-- static method --
-    # urlにアクセスしレスポンスを返却(レスポンスが200になるまでリトライ)  
+
+class WebAccessor:
+
+    #-- static method --
+    # urlにアクセスしレスポンスを返却(レスポンスが200になるまでリトライ)
     @staticmethod
     def get(url, query={}, timeout=0):
         if not WebAccessor.is_available_scheme(url):
