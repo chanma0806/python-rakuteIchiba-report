@@ -1,0 +1,38 @@
+@startuml
+
+class Marketer {
+    {static} anlayze_market_from_rakuten(): void
+}
+
+class RakutenIchibaSearcher {
+    - scraper: Scraper
+    get_products(keyword: string): Product[]
+    get_rakutenPoint(url: string): int
+}
+
+class MarketAnalyzer {
+    analyze(products: Product[]): MarketData
+}
+
+class ReportMaker {
+    - market_info: MarketData
+    make_market_report(keyword: string, result_path: string): void
+}
+
+class WebAccessor {
+    {static} get(url: string, params?: {}, timeout?: int): requests.models.Response
+    {static} is_available_scheme(url: string): boolean
+}
+
+class Scraper {
+    {static} make_command(tag: string, attrs: {}, **kwargs): ScraperCommand
+    scrape: string
+}
+
+Marketer ..> RakutenIchibaSearcher
+Marketer ..> MarketAnalyzer
+Marketer ..> ReportMaker
+RakutenIchibaSearcher ..> WebAccessor
+RakutenIchibaSearcher --> Scraper
+
+@enduml
