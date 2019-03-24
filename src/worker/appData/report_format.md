@@ -1,4 +1,4 @@
-## Amazon商品検索レポート
+## 楽天市場商品検索レポート
 
 ### 作成日: DATE <br>検索キーワード: "KEYWORDS"
 
@@ -10,6 +10,6 @@
 
 HIGH_PRICE_TOP5
 
-## 中価格Top5
+## 低価格Top5
 
 LOW_PRICE_TOP5
