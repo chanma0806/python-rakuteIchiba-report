@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from .appData.data import Product
 import pandas as pd
 
-RAKUTEN_APPLICATION_ID = "1096515298420576244"
+RAKUTEN_APPLICATION_ID = "hoge"
 RAKUTEN_ICHIBA_API = "https://app.rakuten.co.jp/services/api/IchibaItem/Search/20170706?"
 
 # 楽天市場検索クラス
