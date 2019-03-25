@@ -19,10 +19,12 @@
 
 # Usage
 
-## [事前準備]楽天APIキーの取得
+## 事前準備
 
 - [楽天API](https://webservice.rakuten.co.jp/document/)のアプリIDを発行します。
-- `src/worker/rakutenIchibaSeacher.py`内の`RAKUTEN_APPLICATION_ID`に取得したアプリIDを代入します。
+- `src/worker/rakutenIchibaSeacher.py`内の`RAKUTEN_APPLICATION_ID`に取得した楽天のアプリIDを代入します。
+- 実行環境にchromeがインストールされていることを前提にスクリプトが組まれています。
+
 
 ## 実行
 - 下記コマンドを実行してください<br>
